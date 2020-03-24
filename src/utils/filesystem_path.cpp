@@ -94,8 +94,14 @@ public:
 
 	virtual bool subpathsInDirectory(std::vector<std::string>& subpaths) override
 	{
-		// Special paths '.' and '..' are skipped.
 		subpaths.clear();
+
+		if (!isDirectory())
+		{
+			return false;
+		}
+
+		// Special paths '.' and '..' are skipped.
 		for(auto& p: std::filesystem::directory_iterator(_path))
 		{
 			subpaths.emplace_back(p.path().string());
