@@ -74,60 +74,54 @@ protected:
 
 #ifdef OS_WINDOWS
 char FilesystemPathImpl::pathSeparator = '\\';
+namespace fs = std::filesystem;
 
 class FilesystemPathImplWindows : public FilesystemPathImpl
 {
 public:
-	FilesystemPathImplWindows(const std::string& path)
-			: FilesystemPathImpl(path)
-			, _fsPath(path)
-	{}
-	FilesystemPathImplWindows(const FilesystemPathImplWindows& rhs)
-			: FilesystemPathImpl(rhs)
-			, _fsPath(rhs._fsPath)
-	{}
+	FilesystemPathImplWindows(const std::string& path) : FilesystemPathImpl(path) {}
+	FilesystemPathImplWindows(const FilesystemPathImplWindows& rhs): FilesystemPathImpl(rhs) {}
 
 	virtual std::string getAbsolutePath() override
 	{
-		return std::filesystem::absolute(_fsPath).string();
+		return fs::absolute(_path).string();
 	}
 
 	virtual std::string getParentPath() override
 	{
-		return _fsPath.parent_path().string();
+		return fs::path(_path).parent_path().string();
 	}
 
 	virtual bool subpathsInDirectory(std::vector<std::string>& subpaths) override
 	{
 		// Special paths '.' and '..' are skipped.
-		for(auto& p: std::filesystem::directory_iterator(_fsPath))
+		subpaths.clear();
+		for(auto& p: std::filesystem::directory_iterator(_path))
 		{
 			subpaths.emplace_back(p.path().string());
 		}
+		return true;
 	}
 
 	virtual bool exists() override
 	{
-		return std::filesystem::exists(_fsPath);
+		return std::filesystem::exists(_path);
 	}
 
 	virtual bool isFile() override
 	{
-		return std::filesystem::is_regular_file(_fsPath);
+		return std::filesystem::is_regular_file(_path);
 	}
 
 	virtual bool isDirectory() override
 	{
-		return std::filesystem::is_directory(_fsPath);
+		return std::filesystem::is_directory(_path);
 	}
 
 	virtual bool isAbsolute() override
 	{
-		return _fsPath.is_absolute();
+		return fs::path(_path).is_absolute();
 	}
-
-private:
-	std::filesystem::path _fsPath;
 };
 #else
 char FilesystemPathImpl::pathSeparator = '/';
